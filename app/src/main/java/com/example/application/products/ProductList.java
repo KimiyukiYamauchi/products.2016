@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
@@ -52,29 +53,97 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
     }
 
     private class ProductItem {
+        int _id;
         String id;
         String name;
-        String price;
-        String stock;
+        int price;
+        int stock;
     }
 
     private List<ProductItem> itemList;
     private ItemAdapter adapter;
 
     private void setProductData(){
+
+/*
         ProductItem item = new ProductItem();
+        item._id = 1;
         item.id = "A01";
         item.name = "赤鉛筆";
-        item.price = "50";
-        item.stock = "100";
+        item.price = 50;
+        item.stock = 100;
         itemList.add(item);
 
         item = new ProductItem();
+        item._id = 2;
         item.id = "A02";
         item.name = "青鉛筆";
-        item.price = "50";
-        item.stock = "50";
+        item.price = 50;
+        item.stock = 50;
         itemList.add(item);
+*/
+
+        selectProductList();
+
+        //Log.d("setProductData", "size = " + itemList.size());
+
+        //adapter.notifyDataSetChanged();
+
+    }
+
+    private void selectProductList(){
+
+        // 1. SQLiteDatabaseオブジェクトを取得
+        SQLiteDatabase db = myHelper.getReadableDatabase();
+
+        // 2. query()を呼び、検索を行う
+        Cursor cursor =
+                db.query(MyHelper.TABLE_NAME, null, null, null, null, null,
+                        MyHelper.Columns._ID + " ASC");
+
+        // 3. 読込位置を先頭にする。falseの場合は結果0件
+        if(!cursor.moveToFirst()){
+            cursor.close();
+            db.close();
+        }
+
+        // 4. 列のindex(位置)を取得する
+        int _idIndex = cursor.getColumnIndex(MyHelper.Columns._ID);
+        int idIndex = cursor.getColumnIndex(MyHelper.Columns.ID);
+        int nameIndex = cursor.getColumnIndex(MyHelper.Columns.NAME);
+        int priceIndex = cursor.getColumnIndex(MyHelper.Columns.PRICE);
+        int stockIndex = cursor.getColumnIndex(MyHelper.Columns.STOCK);
+
+        // 5. 行を読み込む。
+        //itemList = new ArrayList<ProductItem>(cursor.getCount());
+        do {
+            ProductItem item = new ProductItem();
+            item._id = cursor.getInt(_idIndex);
+            item.id = cursor.getString(idIndex);
+            item.name = cursor.getString(nameIndex);
+            item.price = cursor.getInt(priceIndex);
+            item.stock = cursor.getInt(stockIndex);
+
+            /*Log.d("selectProductList",
+                    "_id = " + item._id + "\n" +
+                    "id = " + item.id + "\n" +
+                    "name = " + item.name + "\n" +
+                    "price = " + item.price + "\n" +
+                    "stock = " + item.stock);*/
+
+            itemList.add(item);
+
+            // 読込位置を次の行に移動させる
+            // 次の行が無い時はfalseを返すのでループを抜ける
+        }while (cursor.moveToNext());
+
+        // 6. Cursorを閉じる
+        cursor.close();
+
+        // 7. データベースを閉じる
+        db.close();;
+
+        //return itemList;
     }
 
     @Override
@@ -92,6 +161,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         adapter =
                 new ItemAdapter(getApplicationContext(), 0,
                         itemList);
+        adapter.setNotifyOnChange(true);
         ListView listView =
                 (ListView)findViewById(R.id.listView);
         listView.setAdapter(adapter);
@@ -115,6 +185,9 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+
+            Log.d("ProductList", "getView");
+
             View view = inflater.inflate(R.layout.product_row, null, false);
             TextView idView = (TextView)view.findViewById(R.id.id);
             TextView nameView = (TextView)view.findViewById(R.id.name);
@@ -123,8 +196,8 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
             ProductItem item = getItem(position);
             idView.setText(item.id);
             nameView.setText(item.name);
-            priceView.setText(item.price);
-            stockView.setText(item.stock);
+            priceView.setText(String.valueOf(item.price));
+            stockView.setText(String.valueOf(item.stock));
             return  view;
         }
     }
@@ -203,6 +276,10 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         Log.d("MyHelper", "initTable");
 
         SQLiteDatabase db = myHelper.getWritableDatabase();
+
+        // 一旦を削除
+        int count = db.delete(MyHelper.TABLE_NAME, null, null);
+        Log.d("initTable", "count =" + count);
 
         setProductDbData();
 

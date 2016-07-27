@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +23,8 @@ import java.util.List;
 
 public class ProductList extends Activity implements AdapterView.OnItemClickListener, View.OnClickListener {
 
-    MyHelper myHelper;
+    private MyHelper myHelper;
+    private Handler mHandler;
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long l) {
@@ -33,6 +35,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
         intent.putExtra("mode", "edit");
 
+        intent.putExtra("_id", item._id);
         intent.putExtra("id", item.id);
         intent.putExtra("name", item.name);
         intent.putExtra("price", item.price);
@@ -115,7 +118,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         int stockIndex = cursor.getColumnIndex(MyHelper.Columns.STOCK);
 
         // 5. 行を読み込む。
-        //itemList = new ArrayList<ProductItem>(cursor.getCount());
+        itemList.removeAll(itemList);
         do {
             ProductItem item = new ProductItem();
             item._id = cursor.getInt(_idIndex);
@@ -124,12 +127,12 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
             item.price = cursor.getInt(priceIndex);
             item.stock = cursor.getInt(stockIndex);
 
-            /*Log.d("selectProductList",
+            Log.d("selectProductList",
                     "_id = " + item._id + "\n" +
                     "id = " + item.id + "\n" +
                     "name = " + item.name + "\n" +
                     "price = " + item.price + "\n" +
-                    "stock = " + item.stock);*/
+                    "stock = " + item.stock);
 
             itemList.add(item);
 
@@ -148,12 +151,17 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        Log.d("ProductList", "onCreate");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_list);
 
         // MyHelperオブジェクトを作り、フィールドにセット
         myHelper = new MyHelper(this);
 
+        //ハンドラを生成
+        mHandler = new Handler();
 
         initTable();
 
@@ -165,7 +173,22 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         ListView listView =
                 (ListView)findViewById(R.id.listView);
         listView.setAdapter(adapter);
-        setProductData();
+
+        // Table取得したデータをListViewにセットするためのスレッド
+        (new Thread(new Runnable() {
+            @Override
+            public void run() {
+                setProductData();
+
+                //メインスレッドのメッセージキューにメッセージを登録します。
+                mHandler.post(new Runnable (){
+                    //run()の中の処理はメインスレッドで動作されます。
+                    public void run(){
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        })).start();
 
         listView.setOnItemClickListener(this);
 
@@ -301,5 +324,6 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         }
 
     }
+
 
 }

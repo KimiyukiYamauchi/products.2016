@@ -108,6 +108,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         if(!cursor.moveToFirst()){
             cursor.close();
             db.close();
+            return;
         }
 
         // 4. 列のindex(位置)を取得する
@@ -163,7 +164,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         //ハンドラを生成
         mHandler = new Handler();
 
-        initTable();
+        //initTable();
 
         itemList = new ArrayList<ProductItem>();
         adapter =
@@ -194,6 +195,30 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
         Button btn_add = (Button)findViewById(R.id.btn_add);
         btn_add.setOnClickListener(this);
+
+        Button btn_ini = ( Button)findViewById(R.id.btn_ini);
+        btn_ini.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                //スレッドを生成して起動します
+                (new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        initTable();
+                        setProductData();
+
+                        //メインスレッドのメッセージキューにメッセージを登録します。
+                        mHandler.post(new Runnable (){
+                            //run()の中の処理はメインスレッドで動作されます。
+                            public void run(){
+                                adapter.notifyDataSetChanged();
+                            }
+                        });
+                    }
+                })).start();
+            }
+        });
     }
 
     private class ItemAdapter extends ArrayAdapter<ProductItem>{
@@ -296,11 +321,11 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
     private void initTable(){
 
-        Log.d("MyHelper", "initTable");
+        Log.d("ProductList", "initTable");
 
         SQLiteDatabase db = myHelper.getWritableDatabase();
 
-        // 一旦を削除
+        // 一旦削除
         int count = db.delete(MyHelper.TABLE_NAME, null, null);
         Log.d("initTable", "count =" + count);
 

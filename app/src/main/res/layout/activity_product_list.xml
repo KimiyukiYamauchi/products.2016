@@ -7,7 +7,8 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.application.products.ProductList">
+    tools:context="com.example.application.products.ProductList"
+    >
 
     <Button
         android:layout_width="wrap_content"
@@ -23,6 +24,17 @@
         android:layout_height="wrap_content"
         android:id="@+id/listView"
         android:layout_below="@+id/btn_add"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="初期化"
+        android:id="@+id/btn_ini"
+        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 </RelativeLayout>

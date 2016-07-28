@@ -128,12 +128,12 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
             item.price = cursor.getInt(priceIndex);
             item.stock = cursor.getInt(stockIndex);
 
-            Log.d("selectProductList",
+            /*Log.d("selectProductList",
                     "_id = " + item._id + "\n" +
                     "id = " + item.id + "\n" +
                     "name = " + item.name + "\n" +
                     "price = " + item.price + "\n" +
-                    "stock = " + item.stock);
+                    "stock = " + item.stock);*/
 
             itemList.add(item);
 
@@ -234,7 +234,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
-            Log.d("ProductList", "getView");
+            //Log.d("ProductList", "getView");
 
             View view = inflater.inflate(R.layout.product_row, null, false);
             TextView idView = (TextView)view.findViewById(R.id.id);

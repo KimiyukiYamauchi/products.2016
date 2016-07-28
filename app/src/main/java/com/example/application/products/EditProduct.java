@@ -28,6 +28,11 @@ public class EditProduct extends Activity implements View.OnClickListener{
 
         mode = intent.getStringExtra("mode");
 
+        EditText idEdit = (EditText)findViewById(R.id.et_id);
+        EditText nameEdit = (EditText)findViewById(R.id.et_name);
+        EditText priceEdit = (EditText)findViewById(R.id.et_price);
+        EditText stockEdit = (EditText)findViewById(R.id.et_stock);
+
         if(mode.equals("edit")){
 
             _id = intent.getIntExtra("_id", 0);
@@ -36,13 +41,9 @@ public class EditProduct extends Activity implements View.OnClickListener{
             int price = intent.getIntExtra("price", 0);
             int stock = intent.getIntExtra("stock", 0);
 
-            EditText idEdit = (EditText)findViewById(R.id.et_id);
             idEdit.setText(id);
-            EditText nameEdit = (EditText)findViewById(R.id.et_name);
             nameEdit.setText(name);
-            EditText priceEdit = (EditText)findViewById(R.id.et_price);
             priceEdit.setText(String.valueOf(price));
-            EditText stockEdit = (EditText)findViewById(R.id.et_stock);
             stockEdit.setText(String.valueOf(stock));
         }
 

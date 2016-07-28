@@ -76,32 +76,44 @@ public class EditProduct extends Activity implements View.OnClickListener{
 
         Intent intent = new Intent(this, ProductList.class);
         startActivity(intent);
+        ProductItemStr item = new ProductItemStr();
+
 
     }
-    private void updateProduct(int _id){
 
-        // 1. SQLiteDatabase取得
+    private class ProductItemStr {
+        String id;
+        String name;
+        String price;
+        String stock;
+    }
+
+    private String insertProduct(ProductItemStr item){
+
+
         SQLiteDatabase db = myHelper.getWritableDatabase();
+
+        // 列に対応する値をセット
+        ContentValues values = new ContentValues();
+
+        values.put(MyHelper.Columns.ID, item.id);
+        values.put(MyHelper.Columns.NAME, item.name);
+        values.put(MyHelper.Columns.PRICE, item.price);
+        values.put(MyHelper.Columns.STOCK, item.stock);
+
+
+
+    private String updateProduct(int _id, ProductItemStr item){
+
+
 
         // 2. 更新する値をセット
         ContentValues values = new ContentValues();
 
-        EditText et_id = (EditText)findViewById(R.id.et_id);
-        String id_str = et_id.getText().toString();
-
-        EditText et_name = (EditText)findViewById(R.id.et_name);
-        String name_str = et_name.getText().toString();
-
-        EditText et_price = (EditText)findViewById(R.id.et_price);
-        String price_str = et_price.getText().toString();
-
-        EditText et_stock = (EditText)findViewById(R.id.et_stock);
-        String stock_str = et_stock.getText().toString();
-
-        values.put(MyHelper.Columns.ID, id_str);
-        values.put(MyHelper.Columns.NAME, name_str);
-        values.put(MyHelper.Columns.PRICE, price_str);
-        values.put(MyHelper.Columns.STOCK, stock_str);
+        values.put(MyHelper.Columns.ID, item.id);
+        values.put(MyHelper.Columns.NAME, item.name);
+        values.put(MyHelper.Columns.PRICE, item.price);
+        values.put(MyHelper.Columns.STOCK, item.stock);
 
         /*Log.d("updateProduct",
                 "ID = " + id_str + "\n" +

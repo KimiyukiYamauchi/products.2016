@@ -72,12 +72,70 @@ public class EditProduct extends Activity implements View.OnClickListener{
 
     @Override
     public void onClick(View view) {
-        updateProduct(_id);
 
-        Intent intent = new Intent(this, ProductList.class);
-        startActivity(intent);
         ProductItemStr item = new ProductItemStr();
 
+        String err_msg = "";
+
+        EditText et_id = (EditText)findViewById(R.id.et_id);
+        item.id = et_id.getText().toString();
+        if(item.id.equals("")){
+            err_msg += "製品IDを入力くしてください\n";
+        }
+
+        EditText et_name = (EditText)findViewById(R.id.et_name);
+        item.name = et_name.getText().toString();
+        if(item.name.equals("")){
+            err_msg += "製品名を入力してください\n";
+        }
+
+        EditText et_price = (EditText)findViewById(R.id.et_price);
+        item.price = et_price.getText().toString();
+        if(item.price.equals("")){
+            err_msg += "単価を入力してください\n";
+        }
+
+        EditText et_stock = (EditText)findViewById(R.id.et_stock);
+        item.stock = et_stock.getText().toString();
+        if(item.stock.equals("")){
+            err_msg += "在庫を入力してください\n";
+        }
+
+        Log.d("EditProduct", "err_msg = " + err_msg);
+
+        if(err_msg.equals("")){
+
+            String ret_msg = "";
+
+            if(mode.equals("edit")){
+                ret_msg = updateProduct(_id, item);
+            }else{
+                ret_msg = insertProduct(item);
+            }
+
+        }else{
+            // 確認ダイアログの生成
+            AlertDialog.Builder alertDlg = new AlertDialog.Builder(this);
+            if(mode.equals("edit")){
+                alertDlg.setTitle("製品編集");
+            }else{
+                alertDlg.setTitle("製品登録");
+            }
+            alertDlg.setMessage(err_msg);
+            alertDlg.setPositiveButton(
+                    "OK",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            // OKボタンクリック処理
+                        }
+                    }
+            );
+
+            // 表示
+            alertDlg.create().show();
+
+        }
 
     }
 

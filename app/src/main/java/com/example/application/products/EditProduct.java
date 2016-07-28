@@ -51,6 +51,14 @@ public class EditProduct extends Activity implements View.OnClickListener{
 
         Button btn_ok = (Button)findViewById(R.id.btn_ok);
         btn_ok.setOnClickListener(this);
+
+        Button btn_cancel = (Button)findViewById(R.id.btn_cancel);
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 
     @Override

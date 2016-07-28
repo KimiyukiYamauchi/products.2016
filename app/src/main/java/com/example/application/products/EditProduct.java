@@ -45,6 +45,14 @@ public class EditProduct extends Activity implements View.OnClickListener{
             nameEdit.setText(name);
             priceEdit.setText(String.valueOf(price));
             stockEdit.setText(String.valueOf(stock));
+
+        }else{
+
+            idEdit.setText("");
+            nameEdit.setText("");
+            priceEdit.setText("");
+            stockEdit.setText("");
+
         }
 
         // MyHelperオブジェクトを作り、フィールドにセット

@@ -86,11 +86,11 @@ public class EditProduct extends Activity implements View.OnClickListener{
         values.put(MyHelper.Columns.PRICE, price_str);
         values.put(MyHelper.Columns.STOCK, stock_str);
 
-        Log.d("updateProduct",
+        /*Log.d("updateProduct",
                 "ID = " + id_str + "\n" +
                 "NAME = " + name_str + "\n" +
                 "PRICE = " + price_str + "\n" +
-                "STOCK = " + stock_str);
+                "STOCK = " + stock_str);*/
 
         // 3. 更新する行をWHEREで指定
         String where = MyHelper.Columns._ID + "=?";

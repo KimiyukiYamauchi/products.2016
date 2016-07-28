@@ -113,6 +113,34 @@ public class EditProduct extends Activity implements View.OnClickListener{
                 ret_msg = insertProduct(item);
             }
 
+            if(ret_msg.equals("")){
+                Intent intent = new Intent(this, ProductList.class);
+                startActivity(intent);
+            }else{
+                // 確認ダイアログの生成
+                AlertDialog.Builder alertDlg = new AlertDialog.Builder(this);
+                if(mode.equals("edit")){
+                    alertDlg.setTitle("製品編集");
+                }else{
+                    alertDlg.setTitle("製品登録");
+                }
+                alertDlg.setMessage(ret_msg);
+                alertDlg.setPositiveButton(
+                        "OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // OKボタンクリック処理
+                            }
+                        }
+                );
+
+                // 表示
+                alertDlg.create().show();
+            }
+
+
+
         }else{
             // 確認ダイアログの生成
             AlertDialog.Builder alertDlg = new AlertDialog.Builder(this);
@@ -148,6 +176,27 @@ public class EditProduct extends Activity implements View.OnClickListener{
 
     private String insertProduct(ProductItemStr item){
 
+        String err_msg = "";
+
+        // 1. SQLiteDatabaseオブジェクト取得
+        SQLiteDatabase db_q = myHelper.getReadableDatabase();
+
+        // 2. queryを呼び、検索を行う
+        String where = MyHelper.Columns.ID + "=?";
+        String [] args = { item.id };
+        Cursor cursor = db_q.query(
+                MyHelper.TABLE_NAME, null, where, args, null, null, null);
+
+        // 3. 読込位置を先頭にする。trueの場合は結果1件以上
+        if(cursor.moveToFirst()){
+            cursor.close();
+            db_q.close();
+            err_msg += "製品IDはすでに存在します";
+            return  err_msg;
+        }else{
+            cursor.close();
+            db_q.close();
+        }
 
         SQLiteDatabase db = myHelper.getWritableDatabase();
 
@@ -159,11 +208,25 @@ public class EditProduct extends Activity implements View.OnClickListener{
         values.put(MyHelper.Columns.PRICE, item.price);
         values.put(MyHelper.Columns.STOCK, item.stock);
 
+        // データベースに行を追加する
+        long id = db.insert(MyHelper.TABLE_NAME, null, values);
+        if(id == -1){
+            Log.d("Database", "行の追加に失敗したよ");
+        }
 
+        // データベースを閉じる(処理の終了を伝える)
+        db.close();
+
+        return err_msg;
+
+    }
 
     private String updateProduct(int _id, ProductItemStr item){
 
+        String err_msg = "";
 
+        // 1. SQLiteDatabase取得
+        SQLiteDatabase db = myHelper.getWritableDatabase();
 
         // 2. 更新する値をセット
         ContentValues values = new ContentValues();
@@ -190,6 +253,9 @@ public class EditProduct extends Activity implements View.OnClickListener{
 
         // 4. データベースを閉じる
         db.close();
+
+
+        return err_msg;
 
     }
 

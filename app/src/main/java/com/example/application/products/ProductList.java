@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -237,6 +238,12 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
             //Log.d("ProductList", "getView");
 
             View view = inflater.inflate(R.layout.product_row, null, false);
+
+            CheckBox cb = (CheckBox)view.findViewById(R.id.checkBox);
+            cb.setFocusable(false);
+            cb.setFocusableInTouchMode(false);
+
+
             TextView idView = (TextView)view.findViewById(R.id.id);
             TextView nameView = (TextView)view.findViewById(R.id.name);
             TextView priceView = (TextView)view.findViewById(R.id.price);

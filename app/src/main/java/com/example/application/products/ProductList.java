@@ -16,10 +16,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class ProductList extends Activity implements AdapterView.OnItemClickListener, View.OnClickListener {
@@ -62,6 +64,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         String name;
         int price;
         int stock;
+        boolean del_flg;
     }
 
     private List<ProductItem> itemList;
@@ -128,13 +131,15 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
             item.name = cursor.getString(nameIndex);
             item.price = cursor.getInt(priceIndex);
             item.stock = cursor.getInt(stockIndex);
+            item.del_flg = false;
 
             /*Log.d("selectProductList",
                     "_id = " + item._id + "\n" +
                     "id = " + item.id + "\n" +
                     "name = " + item.name + "\n" +
                     "price = " + item.price + "\n" +
-                    "stock = " + item.stock);*/
+                    "stock = " + item.stock + "\n" +
+                    "del_flg = " + item.del_flg);*/
 
             itemList.add(item);
 
@@ -150,6 +155,43 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
         //return itemList;
     }
+
+    private void deleteProductList(){
+
+        // 1. SQLiteDatabaseオブジェクトを取得
+        SQLiteDatabase db = myHelper.getWritableDatabase();
+
+        // 2. 削除する行の条件を設定
+        ArrayList<String> temp= new ArrayList<String>();
+        Iterator iterator = itemList.iterator();
+        while(iterator.hasNext()){
+            ProductItem item = (ProductItem)iterator.next();
+            if(item.del_flg){
+                temp.add((String.valueOf(item._id)));
+            }
+        }
+        String [] del_list = temp.toArray(new String[temp.size()]);
+
+        String where = MyHelper.Columns._ID + "=?";
+        if(del_list.length > 1){
+            for(int i=0; i<del_list.length-1; i++){
+                where += " or " + MyHelper.Columns._ID + "=?";
+            }
+        }
+
+        Log.d("deleteProductList", "where = " + where);
+
+        int count = db.delete(MyHelper.TABLE_NAME, where, del_list);
+        if(count == 0){
+            Log.d("Delete", "Faild to delete");
+        }
+
+        // 3. データベースを閉じる
+        db.close();
+
+        //return itemList;
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,7 +222,8 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         (new Thread(new Runnable() {
             @Override
             public void run() {
-                setProductData();
+
+                selectProductList();
 
                 //メインスレッドのメッセージキューにメッセージを登録します。
                 mHandler.post(new Runnable (){
@@ -196,6 +239,30 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
         Button btn_add = (Button)findViewById(R.id.btn_add);
         btn_add.setOnClickListener(this);
+
+        Button btn_del = (Button)findViewById(R.id.btn_del);
+        btn_del.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //スレッドを生成して起動します
+                (new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        deleteProductList();
+                        selectProductList();
+
+                        //メインスレッドのメッセージキューにメッセージを登録します。
+                        mHandler.post(new Runnable (){
+                            //run()の中の処理はメインスレッドで動作されます。
+                            public void run(){
+                                adapter.notifyDataSetChanged();
+                            }
+                        });
+                    }
+                })).start();
+            }
+        });
 
         Button btn_ini = ( Button)findViewById(R.id.btn_ini);
         btn_ini.setOnClickListener(new View.OnClickListener() {
@@ -235,24 +302,54 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
-            //Log.d("ProductList", "getView");
+//            Log.d("ProductList", "getView");
 
-            View view = inflater.inflate(R.layout.product_row, null, false);
-
-            CheckBox cb = (CheckBox)view.findViewById(R.id.checkBox);
-            cb.setFocusable(false);
-            cb.setFocusableInTouchMode(false);
+            View view;
 
 
-            TextView idView = (TextView)view.findViewById(R.id.id);
+            //if(convertView == null){
+                view = inflater.inflate(R.layout.product_row, null, false);
+            /*}else{
+                view = convertView;
+            }*/
+
+            final TextView idView = (TextView)view.findViewById(R.id.id);
             TextView nameView = (TextView)view.findViewById(R.id.name);
             TextView priceView = (TextView)view.findViewById(R.id.price);
             TextView stockView = (TextView)view.findViewById(R.id.stock);
-            ProductItem item = getItem(position);
+            CheckBox cb = (CheckBox)view.findViewById(R.id.checkBox);
+            final ProductItem item = getItem(position);
             idView.setText(item.id);
             nameView.setText(item.name);
             priceView.setText(String.valueOf(item.price));
             stockView.setText(String.valueOf(item.stock));
+            cb.setChecked(item.del_flg);
+
+            cb.setOnCheckedChangeListener(
+                    new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+
+                            item.del_flg = !item.del_flg;
+
+                            Log.d("getView", "OnCheckedChanged item.del_flg = " + item.del_flg);
+
+                        }
+                    }
+            );
+
+
+            /*Log.d("getView",
+                    "_id = " + item._id + "\n" +
+                    "id = " + item.id + "\n" +
+                    "name = " + item.name + "\n" +
+                    "price = " + item.price + "\n" +
+                    "stock = " + item.stock + "\n" +
+                    "del_flg = " + item.del_flg);*/
+
+
+            cb.setFocusable(false);
+            cb.setFocusableInTouchMode(false);
             return  view;
         }
     }

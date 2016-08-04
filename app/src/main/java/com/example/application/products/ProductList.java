@@ -151,7 +151,12 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         cursor.close();
 
         // 7. データベースを閉じる
-        db.close();;
+        db.close();
+
+
+        // 削除ボタンを無効にする
+        Button btn_del = (Button)findViewById(R.id.btn_del);
+        btn_del.setEnabled(false);
 
         //return itemList;
     }
@@ -332,7 +337,20 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
                             item.del_flg = !item.del_flg;
 
-                            Log.d("getView", "OnCheckedChanged item.del_flg = " + item.del_flg);
+                            //Log.d("getView", "OnCheckedChanged item.del_flg = " + item.del_flg);
+
+                            // 削除ボタンの有効無効の設定
+                            boolean btn_enable = false;
+                            Iterator iterator = itemList.iterator();
+                            while(iterator.hasNext()){
+                                final ProductItem tmp = (ProductItem)iterator.next();
+                                if(tmp.del_flg){
+                                    btn_enable = true;
+                                }
+                            }
+                            Button btn_del = (Button)findViewById(R.id.btn_del);
+                            btn_del.setEnabled(btn_enable);
+
 
                         }
                     }
@@ -350,6 +368,8 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
             cb.setFocusable(false);
             cb.setFocusableInTouchMode(false);
+
+
             return  view;
         }
     }

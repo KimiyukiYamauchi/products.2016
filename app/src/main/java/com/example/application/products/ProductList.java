@@ -1,8 +1,10 @@
 package com.example.application.products;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -19,6 +21,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -50,11 +53,64 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
     @Override
     public void onClick(View view) {
-        Intent intent = new Intent(this, EditProduct.class);
+        switch (view.getId()){
+            case R.id.btn_add:
 
-        intent.putExtra("mode", "add");
+                Intent intent = new Intent(this, EditProduct.class);
+                intent.putExtra("mode", "add");
+                startActivity(intent);
+                break;
 
-        startActivity(intent);
+            case R.id.btn_del:
+
+                // 確認ダイアログの生成
+                AlertDialog.Builder alertDlg = new AlertDialog.Builder(this);
+                alertDlg.setTitle("製品削除");
+                alertDlg.setMessage("削除してもよろしいですか？");
+                alertDlg.setPositiveButton(
+                        "OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // OKボタンクリック処理
+                                //スレッドを生成して起動します
+                                (new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+
+                                        deleteProductList();
+                                        //selectProductList();
+
+                                        //メインスレッドのメッセージキューにメッセージを登録します。
+                                        mHandler.post(new Runnable (){
+                                            //run()の中の処理はメインスレッドで動作されます。
+                                            public void run(){
+                                                selectProductList();
+                                                adapter.notifyDataSetChanged();
+                                                Toast.makeText(ProductList.this, "削除しました", Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+                                    }
+                                })).start();
+                            }
+                        }
+                );
+                alertDlg.setNegativeButton(
+                        "Cancel",
+                        new DialogInterface.OnClickListener(){
+                            public void onClick(DialogInterface dialog, int which){
+
+                            }
+                        });
+
+                // 表示
+                alertDlg.create().show();
+                break;
+
+            case R.id.btn_ini:
+                break;
+        }
+
 
     }
 
@@ -246,28 +302,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         btn_add.setOnClickListener(this);
 
         Button btn_del = (Button)findViewById(R.id.btn_del);
-        btn_del.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //スレッドを生成して起動します
-                (new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        deleteProductList();
-                        selectProductList();
-
-                        //メインスレッドのメッセージキューにメッセージを登録します。
-                        mHandler.post(new Runnable (){
-                            //run()の中の処理はメインスレッドで動作されます。
-                            public void run(){
-                                adapter.notifyDataSetChanged();
-                            }
-                        });
-                    }
-                })).start();
-            }
-        });
+        btn_del.setOnClickListener(this);
 
         Button btn_ini = ( Button)findViewById(R.id.btn_ini);
         btn_ini.setOnClickListener(new View.OnClickListener() {
